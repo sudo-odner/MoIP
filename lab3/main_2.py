@@ -84,7 +84,8 @@ def plot_histogram(privateAnalysis, title):
     plt.grid(True)
     plt.show()
 
-text_path = "text.txt"
+abs_path = os.path.dirname(os.path.abspath(__file__))
+text_path = f"{abs_path}/text.txt"
 constant_key = 11
 proverb_key = "Порозно думать вместе не жить"
 seed = [1, 0, 0, 1, 1, 0, 1, 1]
@@ -93,33 +94,36 @@ taps = [0, 1, 3, 4]
 with open(text_path, 'r', encoding="cp1251") as f:
     original_text = f.read()
 
+
+abs_path = os.path.dirname(os.path.abspath(__file__))
+
 encrypted_constant = encrypt_with_constant_cp1251(original_text, constant_key)
 encrypted_proverb = encrypt_with_proverb_cp1251(original_text, proverb_key)
 psp = lfsr(seed, taps, len(original_text))
 encrypted_psp = encrypt_with_psp_cp1251(original_text, psp)
 
-os.makedirs("encrypted_texts", exist_ok=True)
-with open("encrypted_texts/encrypted_constant1.txt", "w", encoding="cp1251", errors='replace') as f:
+os.makedirs("output/encrypted_texts", exist_ok=True)
+with open(f"{abs_path}/output/encrypted_texts/encrypted_constant.txt", "w", encoding="cp1251", errors='replace') as f:
     f.write(encrypted_constant)
-with open("encrypted_texts/encrypted_proverb1.txt", "w", encoding="cp1251", errors='replace') as f:
+with open(f"{abs_path}/output/encrypted_texts/encrypted_proverb.txt", "w", encoding="cp1251", errors='replace') as f:
     f.write(encrypted_proverb)
-with open("encrypted_texts/encrypted_psp1.txt", "w", encoding="cp1251", errors='replace') as f:
+with open(f"{abs_path}/output/encrypted_texts/encrypted_psp.txt", "w", encoding="cp1251", errors='replace') as f:
     f.write(encrypted_psp)
 
 print("Метод 1: Константа")
-analysis_constant = privateAnalysisText("encrypted_texts/encrypted_constant1.txt", "cp1251")
+analysis_constant = privateAnalysisText(f"{abs_path}/output/encrypted_texts/encrypted_constant.txt", "cp1251")
 plot_histogram(analysis_constant, "Histogram (Constant Key)")
 entropy_constant = entropy(analysis_constant)
 print(f"Entropy: {entropy_constant:.4f} {len(encrypted_constant)}")
 
 print("Метод 2: Поговорка")
-analysis_proverb = privateAnalysisText("encrypted_texts/encrypted_proverb1.txt")
+analysis_proverb = privateAnalysisText(f"{abs_path}/output/encrypted_texts/encrypted_proverb.txt")
 plot_histogram(analysis_proverb, "Histogram (Proverb Key)")
 entropy_proverb = entropy(analysis_proverb)
 print(f"Entropy: {entropy_proverb:.4f} {len(encrypted_proverb)}")
 
 print("Метод 3: ПСП")
-analysis_psp = privateAnalysisText("encrypted_texts/encrypted_psp1.txt")
+analysis_psp = privateAnalysisText(f"{abs_path}/output/encrypted_texts/encrypted_psp.txt")
 plot_histogram(analysis_psp, "Histogram (LFSR Key)")
 entropy_psp = entropy(analysis_psp)
 print(f"Entropy: {entropy_psp:.4f}, {len(encrypted_psp)}")

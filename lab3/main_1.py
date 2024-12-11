@@ -1,5 +1,6 @@
 import math
 import numpy as np
+import os
 
 # Функция для шифрования методом Маршрутной перестановки(Треугольник с использованием случайных сдвигов и транспозицией)
 def triangle_encrypt(text):
@@ -60,14 +61,18 @@ def triangle_decrypt(encrypted_text, shift_key):
 
     return decrypted_text
 
+
+abs_path = os.path.dirname(os.path.abspath(__file__))
+with open(f"{abs_path}/text.txt", 'r') as f:
+    text = f.read()
+
 # Тестирование шифрования и дешифрования
-text = "Текст для шифрованиявфыафваы вв"
-print("Исходный текст:", text)
+# print("Исходный текст:", text.encode('cp1251').decode('utf-8'))
 
 # Шифруем
 encrypted_text, shift_key = triangle_encrypt(text)
-print(f"\nЗашифрованный текст: {encrypted_text}")
+with open(f"{abs_path}/output/encrypted_text_method/encrypted.txt", "w") as f:
+    f.write(encrypted_text)
 
 # Расшифровываем
-decrypted_text = triangle_decrypt(encrypted_text, shift_key)
-print(f"\nРасшифрованный текст: {decrypted_text}")
+# decrypted_text = triangle_decrypt(encrypted_text, shift_key)

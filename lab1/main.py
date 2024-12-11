@@ -2,7 +2,6 @@ import matplotlib.pyplot as plt
 from PIL import Image
 import numpy as np
 
-
 def privateAnalysisText(path: str, encode="cp1251") -> np.ndarray:
     with open(path, 'r') as f:
         text = f.read()
@@ -44,7 +43,7 @@ def plotHistogram(histogramCords: np.ndarray, title: str):
 data_file_bmp = [
     "data/bmp/tree.bmp",        # tree photo
     "data/bmp/mandrill.bmp",    # mandrill photo
-    "data/bmp/red.bmp"          # red picture
+    "data/bmp/red.bmp"          # red histogram
 ]
 data_file_txt = [
     "data/txt/news_english.txt",               # News text on english
