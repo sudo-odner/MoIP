@@ -105,8 +105,7 @@ class RNGApp:
         bins = 64  # Увеличиваем количество интервалов для более узких столбцов
         hist, bin_edges, _ = ax.hist(numbers, bins=bins, range=(0, 256), color='blue', alpha=0.7)
         ax.set_title("Histogram of Generated Numbers")
-        ax.set_x
-        label("Value")
+        ax.set_xlabel("Value")
         ax.set_ylabel("Frequency")
 
         # Добавление графика в tkinter
