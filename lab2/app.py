@@ -35,18 +35,18 @@ def lfsr_bitwise(seed, length):
     # bit = (seed ^ (seed >> 3) ^ (seed >> 4) ^ (seed >> 5)) & 1
 
     # Параметры для LFSR
-    taps = [7, 4, 3, 2, 0] # Полином x^8 + x^5 + x^4 + x^3 + 1
-    state = seed & 0xFF # Обрезаем если сид больше 8
+    taps = [7, 4, 3, 2] # Полином x^8 + x^5 + x^4 + x^3 + 1
+    state = seed % 256 # Обрезаем если сид больше 8
 
     sequence = []
     for _ in range(length):
-        sequence.append(state & 0xFF)
         new_bit = 0
         for tap in taps:
             new_bit ^= state >> (tap % 8)
+        new_bit = new_bit & 1
 
-        sequence.append(state)
         state = ((state >> 1) | (new_bit << 7)) & 0xFF # Последние 8 бит результата
+        sequence.append(state)
     return sequence
 
 class RNGApp:
@@ -109,7 +109,7 @@ class RNGApp:
 
         # Создание графика
         fig, ax = plt.subplots(figsize=(6, 4))
-        bins = 64  # Увеличиваем количество интервалов для более узких столбцов
+        bins = 64*2  # Увеличиваем количество интервалов для более узких столбцов
         hist, bin_edges, _ = ax.hist(numbers, bins=bins, range=(0, 256), color='blue', alpha=0.7)
         ax.set_title("Histogram of Generated Numbers")
         ax.set_xlabel("Value")

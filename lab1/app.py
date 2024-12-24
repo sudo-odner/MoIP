@@ -9,21 +9,23 @@ from PIL import Image
 def privateAnalysisText(path: str, encode="cp1251") -> np.ndarray:
     privateAnalysis = np.zeros(shape=256, dtype=int)
 
-    with open(path, 'r', encoding=encode) as f:
+    with open(path, 'r') as f:
         text = f.read()
     for char in text:
         privateAnalysis[char.encode(encode)[0]] += 1
     return privateAnalysis
 
 
-def privateAnalysisPhoto(path: str) -> np.ndarray:
-    privateAnalysis = np.zeros(shape=256, dtype=int)
+def privateAnalysisPhotoRGB(path: str) -> tuple:
+    img = Image.open(path).convert('RGB')
+    data = np.array(img)
 
-    img = Image.open(path).convert('L')
-    dataPixelIn1D = np.array(img).reshape(-1)
-    for pixel in dataPixelIn1D:
-        privateAnalysis[pixel] += 1
-    return privateAnalysis
+    # Отдельный анализ для каждого канала
+    red_channel = np.histogram(data[:, :, 0].flatten(), bins=256, range=(0, 256))[0]
+    green_channel = np.histogram(data[:, :, 1].flatten(), bins=256, range=(0, 256))[0]
+    blue_channel = np.histogram(data[:, :, 2].flatten(), bins=256, range=(0, 256))[0]
+
+    return red_channel, green_channel, blue_channel
 
 
 def entropy(privateAnalysis):
@@ -66,22 +68,38 @@ class PrivateAnalysisApp:
             # Определяем, текст это или картинка
             if file_path.endswith(('.txt')):
                 analysis = privateAnalysisText(file_path)
+
+                # Вычисляем энтропию
+                ent = entropy(analysis)
+                self.entropy_label.config(text=f"Энтропия файла: {ent:.4f}")
+
+                # Строим график
+                self.ax.clear()
+                self.ax.bar(range(256), analysis, color='blue')
+                self.ax.set_title("Private Analysis")
+                self.ax.set_xlabel("Символы / Значения пикселей")
+                self.ax.set_ylabel("Частота")
+
             elif file_path.endswith(('.png', '.jpg', '.jpeg', '.bmp')):
-                analysis = privateAnalysisPhoto(file_path)
+                red_channel, green_channel, blue_channel = privateAnalysisPhotoRGB(file_path)
+
+                # Строим график для трех каналов с прозрачностью
+                self.ax.clear()
+                self.ax.bar(range(256), red_channel, color='red', alpha=0.33, label='Red Channel')
+                self.ax.bar(range(256), green_channel, color='green', alpha=0.33, label='Green Channel')
+                self.ax.bar(range(256), blue_channel, color='blue', alpha=0.33, label='Blue Channel')
+                self.ax.set_title("RGB Analysis")
+                self.ax.set_xlabel("Значения пикселей")
+                self.ax.set_ylabel("Частота")
+                self.ax.legend()
+
+                # Отображаем примерную энтропию (для красного канала как примера)
+                self.entropy_label.config(text=f"Энтропия всех каналов: {entropy(red_channel + green_channel + blue_channel):.4f}")
+
             else:
                 messagebox.showerror("Ошибка", "Неподдерживаемый формат файла")
                 return
 
-            # Вычисляем энтропию
-            ent = entropy(analysis)
-            self.entropy_label.config(text=f"Энтропия файла: {ent:.4f}")
-
-            # Строим график
-            self.ax.clear()
-            self.ax.bar(range(256), analysis, color='blue')
-            self.ax.set_title("Private Analysis")
-            self.ax.set_xlabel("Символы / Значения пикселей")
-            self.ax.set_ylabel("Частота")
             self.canvas.draw()
         except Exception as e:
             messagebox.showerror("Ошибка", f"Произошла ошибка: {e}")
