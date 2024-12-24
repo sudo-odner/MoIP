@@ -4,15 +4,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-# Параметры для LCG
-a, c, m = 1664525, 1013904223, 2**32  # Классические параметры LCG
-# Параметры для BBS
-p, q = 383, 503  # Простые числа Блюма
-# Параметры для LFSR
-lfsr_taps = [7, 5, 4, 3]  # Полином x^8 + x^5 + x^4 + x^3 + 1
-
 # Реализация линейного конгруэнтного генератора (LCG)
-def lcg_numpy(a, c, m, seed, length):
+def lcg_numpy(seed, length):
+    # Параметры для LCG
+    a, c, m = 1664525, 1013904223, 2 ** 32  # Классические параметры LCG
+
     x = np.empty(length, dtype=np.uint8)
     value = seed
     for i in range(length):
@@ -21,7 +17,10 @@ def lcg_numpy(a, c, m, seed, length):
     return x.tolist()
 
 # Реализация генератора BBS (Blum Blum Shub) с использованием двоичных операций
-def bbs_binary(p, q, seed, length):
+def bbs_binary(seed, length):
+    # Параметры для BBS
+    p, q = 383, 503  # Простые числа Блюма
+
     M = p * q
     x = seed % M
     sequence = []
@@ -31,15 +30,23 @@ def bbs_binary(p, q, seed, length):
     return sequence
 
 # Реализация LFSR с использованием битовых операций и двоичного представления
-def lfsr_bitwise(seed, taps, length):
-    state = seed
+def lfsr_bitwise(seed, length):
+    # Параметры для LFSR
+    # bit = (seed ^ (seed >> 3) ^ (seed >> 4) ^ (seed >> 5)) & 1
+
+    # Параметры для LFSR
+    taps = [7, 4, 3, 2, 0] # Полином x^8 + x^5 + x^4 + x^3 + 1
+    state = seed & 0xFF # Обрезаем если сид больше 8
+
     sequence = []
     for _ in range(length):
         sequence.append(state & 0xFF)
         new_bit = 0
         for tap in taps:
-            new_bit ^= (state >> tap) & 1
-        state = ((state << 1) | new_bit) & 0xFF # Последние 8 бит результата
+            new_bit ^= state >> (tap % 8)
+
+        sequence.append(state)
+        state = ((state >> 1) | (new_bit << 7)) & 0xFF # Последние 8 бит результата
     return sequence
 
 class RNGApp:
@@ -87,11 +94,11 @@ class RNGApp:
 
         # Выбор метода генерации
         if method == "LCG":
-            numbers = lcg_numpy(a, c, m, seed, length)
+            numbers = lcg_numpy(seed, length)
         elif method == "BBS":
-            numbers = bbs_binary(p, q, seed, length)
+            numbers = bbs_binary(seed, length)
         elif method == "LFSR":
-            numbers = lfsr_bitwise(seed, lfsr_taps, length)
+            numbers = lfsr_bitwise(seed, length)
 
         self.plot_histogram(numbers)
 
